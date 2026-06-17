@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>สิทธิ์-ปิ่น น้ำยางสด V3</title>
   <meta name="description" content="เว็บแอพสิทธิ์-ปิ่น น้ำยางสด Version 3 สำหรับคำนวณบิลน้ำยาง ขี้ยาง ขายต่อโรงงาน สต๊อก รายงานกำไร และ Cloud Sync Firebase" />
   <meta name="theme-color" content="#1d6b3a" />
@@ -615,6 +615,20 @@ service cloud.firestore {
         </div>
       </section>
     </main>
+
+    <nav class="mobile-tabs" aria-label="เมนูมือถือ">
+      <button class="tab-btn mobile-tab-btn active" data-tab="dashboard"><span>⌂</span><small>หน้าแรก</small></button>
+      <button class="tab-btn mobile-tab-btn" data-tab="purchase"><span>＋</span><small>ซื้อ</small></button>
+      <button class="tab-btn mobile-tab-btn" data-tab="sale"><span>⇄</span><small>ขาย</small></button>
+      <button class="tab-btn mobile-tab-btn" data-tab="purchase-bills"><span>บิล</span><small>ซื้อ</small></button>
+      <button class="tab-btn mobile-tab-btn" data-tab="sale-bills"><span>บิล</span><small>ขาย</small></button>
+      <button class="tab-btn mobile-tab-btn" data-tab="stock"><span>▦</span><small>สต๊อก</small></button>
+      <button class="tab-btn mobile-tab-btn" data-tab="customers"><span>👤</span><small>ชาวสวน</small></button>
+      <button class="tab-btn mobile-tab-btn" data-tab="factories"><span>🏭</span><small>โรงงาน</small></button>
+      <button class="tab-btn mobile-tab-btn" data-tab="prices"><span>฿</span><small>ราคา</small></button>
+      <button class="tab-btn mobile-tab-btn" data-tab="reports"><span>▤</span><small>รายงาน</small></button>
+      <button class="tab-btn mobile-tab-btn" data-tab="settings"><span>⚙</span><small>ตั้งค่า</small></button>
+    </nav>
   </div>
 
   <div id="toast" role="status" aria-live="polite"></div>

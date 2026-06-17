@@ -414,6 +414,25 @@ function switchTab(tabId) {
   document.querySelectorAll('.tab-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.tab === tabId));
   document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.toggle('active', panel.id === tabId));
   renderAll();
+  requestAnimationFrame(() => {
+    document.querySelectorAll(`.tab-btn[data-tab="${tabId}"]`).forEach((btn) => {
+      if (btn.getClientRects().length) btn.scrollIntoView({ block: 'nearest', inline: 'center' });
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+function enhanceMobileTables(root = document) {
+  root.querySelectorAll('.table-wrap table').forEach((table) => {
+    const headers = [...table.querySelectorAll('thead th')].map((th) => th.textContent.trim());
+    if (!headers.length) return;
+    table.classList.add('mobile-card-table');
+    table.querySelectorAll('tbody tr').forEach((row) => {
+      [...row.children].forEach((cell, index) => {
+        if (!cell.dataset.label) cell.dataset.label = headers[index] || '';
+      });
+    });
+  });
 }
 
 function getPriceForDate(date) {
@@ -1443,6 +1462,7 @@ function renderAll() {
   renderPrices();
   renderStock();
   renderReports();
+  enhanceMobileTables();
 }
 
 function bindEvents() {
@@ -1490,8 +1510,8 @@ function bindEvents() {
   $('salePaymentMethod').addEventListener('change', () => { if ($('salePaymentMethod').value === 'credit') $('saleStatus').value = 'pending'; });
 
   ['dashboardDate','purchaseFilterDate','saleFilterDate','reportFrom','reportTo','priceDate'].forEach((id) => $(id).addEventListener('change', () => renderAll()));
-  $('purchaseSearch').addEventListener('input', renderPurchases);
-  $('saleSearch').addEventListener('input', renderSales);
+  $('purchaseSearch').addEventListener('input', () => { renderPurchases(); enhanceMobileTables(); });
+  $('saleSearch').addEventListener('input', () => { renderSales(); enhanceMobileTables(); });
 }
 
 function seedIfEmpty() {
