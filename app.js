@@ -1,7 +1,18 @@
 const STORAGE_KEY = 'rubberBillJaoJoyV3';
 const PREVIOUS_STORAGE_KEYS = ['rubberBillJaoJoyV2', 'rubberBillV1'];
 const FIREBASE_VERSION = '10.12.5';
+const CLOUD_ROOT_COLLECTION = 'rubberSitpin';
 const CLOUD_COLLECTIONS = ['customers', 'factories', 'prices', 'purchases', 'sales', 'stockAdjustments'];
+const DEFAULT_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDntNUq_uLtPqkpp_MN2YDc6J2f_b-7n3A",
+  authDomain: "enjoy-5eff3.firebaseapp.com",
+  projectId: "enjoy-5eff3",
+  storageBucket: "enjoy-5eff3.firebasestorage.app",
+  messagingSenderId: "285653213272",
+  appId: "1:285653213272:web:fffa3bdf0bc7ac92562a2d",
+  measurementId: "G-KYJKPXTZYS"
+};
+const DEFAULT_FIREBASE_CONFIG_TEXT = JSON.stringify(DEFAULT_FIREBASE_CONFIG, null, 2);
 
 const THB = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' });
 const NUM = new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -23,9 +34,9 @@ const defaultState = {
     defaultStaff: '',
     receiptSize: '80',
     roundingMode: 'none',
-    firebaseConfigText: '',
+    firebaseConfigText: DEFAULT_FIREBASE_CONFIG_TEXT,
     firebaseShopCode: 'sitpin-main',
-    cloudSyncEnabled: false,
+    cloudSyncEnabled: true,
     lastCloudSyncAt: ''
   },
   customers: [],
@@ -38,7 +49,7 @@ const defaultState = {
 
 let state = loadState();
 state.settings.shopName = migrateShopName(state.settings.shopName);
-if (!state.settings.firebaseShopCode || state.settings.firebaseShopCode === 'jaojoy-main') state.settings.firebaseShopCode = defaultState.settings.firebaseShopCode;
+applyFirebaseDefaults();
 let lastPurchaseId = null;
 let lastSaleId = null;
 let firebaseCtx = null;
@@ -106,6 +117,22 @@ function saveLocalState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+function applyFirebaseDefaults() {
+  let changed = false;
+  if (!state.settings.firebaseConfigText) {
+    state.settings.firebaseConfigText = DEFAULT_FIREBASE_CONFIG_TEXT;
+    changed = true;
+  }
+  if (!state.settings.firebaseShopCode || state.settings.firebaseShopCode === 'jaojoy-main') {
+    state.settings.firebaseShopCode = defaultState.settings.firebaseShopCode;
+    changed = true;
+  }
+  if (changed && state.settings.cloudSyncEnabled !== true) {
+    state.settings.cloudSyncEnabled = true;
+  }
+  if (changed) saveLocalState();
+}
+
 function saveState() {
   saveLocalState();
   renderCloudStatus();
@@ -136,7 +163,7 @@ function parseFirebaseConfig(text) {
 }
 
 function cleanShopCode(value) {
-  return String(value || 'jaojoy-main').trim().replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 60) || 'jaojoy-main';
+  return String(value || 'sitpin-main').trim().replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 60) || 'sitpin-main';
 }
 
 function renderCloudStatus(extraText = '') {
@@ -188,7 +215,7 @@ async function initFirebaseCloud() {
   const config = parseFirebaseConfig(state.settings.firebaseConfigText);
   const shopCode = cleanShopCode(state.settings.firebaseShopCode);
   const { appMod, authMod, fsMod } = await loadFirebaseModules();
-  const appName = `rubber-jaojoy-${shopCode}`;
+  const appName = `rubber-sitpin-${shopCode}`;
   const existing = appMod.getApps().find((app) => app.name === appName);
   const app = existing || appMod.initializeApp(config, appName);
   const auth = authMod.getAuth(app);
@@ -199,11 +226,11 @@ async function initFirebaseCloud() {
 }
 
 function cloudPath(collectionName, id) {
-  return firebaseCtx.fsMod.doc(firebaseCtx.db, 'rubberJaoJoy', firebaseCtx.shopCode, collectionName, id);
+  return firebaseCtx.fsMod.doc(firebaseCtx.db, CLOUD_ROOT_COLLECTION, firebaseCtx.shopCode, collectionName, id);
 }
 
 function metaPath() {
-  return firebaseCtx.fsMod.doc(firebaseCtx.db, 'rubberJaoJoy', firebaseCtx.shopCode, 'meta', 'settings');
+  return firebaseCtx.fsMod.doc(firebaseCtx.db, CLOUD_ROOT_COLLECTION, firebaseCtx.shopCode, 'meta', 'settings');
 }
 
 function sanitizeForFirestore(item) {
@@ -258,7 +285,7 @@ function subscribeCloudRealtime() {
   }, (error) => renderCloudStatus(error.message || 'อ่าน Cloud settings ไม่สำเร็จ')));
 
   CLOUD_COLLECTIONS.forEach((name) => {
-    const ref = fsMod.collection(firebaseCtx.db, 'rubberJaoJoy', firebaseCtx.shopCode, name);
+    const ref = fsMod.collection(firebaseCtx.db, CLOUD_ROOT_COLLECTION, firebaseCtx.shopCode, name);
     cloudUnsubscribes.push(fsMod.onSnapshot(ref, (snap) => {
       isApplyingCloud = true;
       state[name] = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => String(b.createdAt || b.date || '').localeCompare(String(a.createdAt || a.date || '')));
@@ -290,7 +317,7 @@ async function pullCloudOnce() {
     state.settings = { ...defaultState.settings, ...state.settings, ...meta.data(), ...keep };
   }
   for (const name of CLOUD_COLLECTIONS) {
-    const snap = await fsMod.getDocs(fsMod.collection(firebaseCtx.db, 'rubberJaoJoy', firebaseCtx.shopCode, name));
+    const snap = await fsMod.getDocs(fsMod.collection(firebaseCtx.db, CLOUD_ROOT_COLLECTION, firebaseCtx.shopCode, name));
     state[name] = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   }
   isApplyingCloud = false;
@@ -310,7 +337,7 @@ async function clearCloudData() {
   if (!firebaseCtx || !state.settings.cloudSyncEnabled) return;
   const { fsMod } = firebaseCtx;
   for (const name of CLOUD_COLLECTIONS) {
-    const snap = await fsMod.getDocs(fsMod.collection(firebaseCtx.db, 'rubberJaoJoy', firebaseCtx.shopCode, name));
+    const snap = await fsMod.getDocs(fsMod.collection(firebaseCtx.db, CLOUD_ROOT_COLLECTION, firebaseCtx.shopCode, name));
     for (const d of snap.docs) await fsMod.deleteDoc(d.ref);
   }
 }

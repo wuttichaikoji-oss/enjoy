@@ -571,12 +571,12 @@
           <div class="form-grid small">
             <div class="field span-2">
               <label>Firebase Config JSON</label>
-              <textarea id="firebaseConfigText" rows="7" placeholder='วาง config จาก Firebase เช่น { "apiKey": "...", "authDomain": "...", "projectId": "..." }'></textarea>
+              <textarea id="firebaseConfigText" rows="7" placeholder='เชื่อมค่า Firebase ให้แล้ว สามารถกดบันทึก + เชื่อม Firebase ได้ทันที'></textarea>
               <small class="hint">ต้องเปิด Cloud Firestore และ Anonymous Authentication ใน Firebase ก่อนใช้งาน Cloud Sync</small>
             </div>
             <div class="field">
               <label>รหัสร้าน / Shop Code</label>
-              <input type="text" id="firebaseShopCode" placeholder="jaojoy-main" />
+              <input type="text" id="firebaseShopCode" placeholder="sitpin-main" />
               <small class="hint">ใช้รหัสเดียวกันทุกเครื่องเพื่อแชร์ข้อมูลชุดเดียวกัน</small>
             </div>
             <div class="field">
@@ -596,7 +596,7 @@
             <pre>rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /rubberJaoJoy/{shopId}/{document=**} {
+    match /rubberSitpin/{shopId}/{document=**} {
       allow read, write: if request.auth != null;
     }
   }

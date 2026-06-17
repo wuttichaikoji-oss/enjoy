@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sitpin-latex-v3-cache-v4';
+const CACHE_NAME = 'sitpin-latex-v3-cache-v5-firebase';
 const ASSETS = ['./', './index.html', './styles.css', './app.js', './manifest.json', './assets/logo.png', './assets/logo-thermal.png', './assets/icon-192.png', './assets/icon-512.png', './assets/apple-touch-icon.png', './assets/favicon.ico'];
 
 self.addEventListener('install', (event) => {

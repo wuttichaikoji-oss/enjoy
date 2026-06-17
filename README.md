@@ -40,16 +40,14 @@
 
 ## วิธีเปิด Cloud Sync Firebase
 
-1. ไปที่ Firebase Console
-2. สร้าง Project
-3. สร้าง Web App แล้วคัดลอก Firebase config
-4. เปิด Cloud Firestore
-5. เปิด Authentication > Sign-in method > Anonymous
-6. ใส่ Firestore Rules จากไฟล์ `firestore.rules`
-7. เปิดเว็บแอพ > ตั้งค่า > Cloud Sync Firebase
-8. วาง Firebase config
-9. ใส่ Shop Code เช่น `jaojoy-main`
-10. กด `บันทึก + เชื่อม Firebase`
+Firebase config ของโปรเจกต์ `enjoy-5eff3` ถูกใส่ไว้ในแอพแล้ว
+
+1. เปิด Authentication > Sign-in method > Anonymous > Enable
+2. เปิด Firestore Database
+3. ใส่ Firestore Rules จากไฟล์ `firestore.rules`
+4. เปิดเว็บแอพ > ตั้งค่า > Cloud Sync Firebase
+5. ใช้ Shop Code `sitpin-main` เพื่อให้ทุกเครื่องซิงก์ข้อมูลชุดเดียวกัน
+6. กด `บันทึก + เชื่อม Firebase` หรือรอให้ระบบเชื่อมอัตโนมัติเมื่อเปิดแอพครั้งแรก
 
 > ใช้ Shop Code เดียวกันทุกเครื่อง เพื่อให้ข้อมูลซิงก์ชุดเดียวกัน
 
@@ -58,13 +56,13 @@
 ข้อมูลจะถูกเก็บที่:
 
 ```text
-rubberJaoJoy/{shopCode}/customers
-rubberJaoJoy/{shopCode}/factories
-rubberJaoJoy/{shopCode}/prices
-rubberJaoJoy/{shopCode}/purchases
-rubberJaoJoy/{shopCode}/sales
-rubberJaoJoy/{shopCode}/stockAdjustments
-rubberJaoJoy/{shopCode}/meta/settings
+rubberSitpin/{shopCode}/customers
+rubberSitpin/{shopCode}/factories
+rubberSitpin/{shopCode}/prices
+rubberSitpin/{shopCode}/purchases
+rubberSitpin/{shopCode}/sales
+rubberSitpin/{shopCode}/stockAdjustments
+rubberSitpin/{shopCode}/meta/settings
 ```
 
 ## หมายเหตุเรื่องความปลอดภัย
