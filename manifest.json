@@ -1,0 +1,22 @@
+{
+  "name": "สิทธิ์-ปิ่น น้ำยางสด",
+  "short_name": "สิทธิ์ปิ่น",
+  "description": "เว็บแอพคำนวณบิลรับซื้อยาง ขายโรงงาน สต๊อก รายงานกำไร และ Firebase Cloud Sync",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1d6b3a",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

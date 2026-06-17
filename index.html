@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>สิทธิ์-ปิ่น น้ำยางสด V3</title>
+  <meta name="description" content="เว็บแอพสิทธิ์-ปิ่น น้ำยางสด Version 3 สำหรับคำนวณบิลน้ำยาง ขี้ยาง ขายต่อโรงงาน สต๊อก รายงานกำไร และ Cloud Sync Firebase" />
+  <meta name="theme-color" content="#1d6b3a" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/favicon.ico" sizes="any" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <img class="app-logo" src="assets/logo.png" alt="โลโก้ สิทธิ์-ปิ่น น้ำยางสด" />
+        <div>
+          <p class="eyebrow">Version 3 · No Login · Cloud Sync</p>
+          <h1>สิทธิ์-ปิ่น น้ำยางสด</h1>
+          <p class="subtitle">รับซื้อจากชาวสวน · ขายต่อโรงงาน · สต๊อก · รายงานกำไร · พิมพ์บิล · Firebase Sync</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span class="status-pill local" id="cloudStatusHeader">Local only</span>
+        <button class="ghost-btn" id="quickPrintLastPurchaseBtn">พิมพ์บิลซื้อล่าสุด</button>
+        <button class="ghost-btn" id="quickPrintLastSaleBtn">พิมพ์บิลขายล่าสุด</button>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="เมนูหลัก">
+      <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn" data-tab="purchase">รับซื้อยาง</button>
+      <button class="tab-btn" data-tab="sale">ขายโรงงาน</button>
+      <button class="tab-btn" data-tab="purchase-bills">บิลซื้อ</button>
+      <button class="tab-btn" data-tab="sale-bills">บิลขาย</button>
+      <button class="tab-btn" data-tab="stock">สต๊อก</button>
+      <button class="tab-btn" data-tab="customers">ชาวสวน</button>
+      <button class="tab-btn" data-tab="factories">โรงงาน</button>
+      <button class="tab-btn" data-tab="prices">ราคา</button>
+      <button class="tab-btn" data-tab="reports">รายงาน</button>
+      <button class="tab-btn" data-tab="settings">ตั้งค่า</button>
+    </nav>
+
+    <main>
+      <section class="panel tab-panel active" id="dashboard">
+        <div class="panel-head">
+          <div>
+            <h2>ภาพรวมวันนี้</h2>
+            <p>ตัวเลขจากรายการที่ยังไม่ถูกยกเลิก</p>
+          </div>
+          <input type="date" id="dashboardDate" />
+        </div>
+        <div class="cards" id="dashboardCards"></div>
+        <div class="grid two">
+          <div class="card large">
+            <h3>บิลซื้อล่าสุด</h3>
+            <div id="latestPurchases" class="list empty-state">ยังไม่มีบิลซื้อ</div>
+          </div>
+          <div class="card large">
+            <h3>บิลขายล่าสุด</h3>
+            <div id="latestSales" class="list empty-state">ยังไม่มีบิลขาย</div>
+          </div>
+        </div>
+        <div class="grid two mt">
+          <div class="card large">
+            <h3>สต๊อกคงเหลือ</h3>
+            <div id="dashboardStock" class="table-wrap"></div>
+          </div>
+          <div class="card large">
+            <h3>กำไรโดยประมาณ</h3>
+            <div id="dashboardProfit" class="profit-box"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel tab-panel" id="purchase">
+        <div class="panel-head">
+          <div>
+            <h2>สร้างบิลรับซื้อ</h2>
+            <p>รองรับน้ำยางสดแบบ DRC และขี้ยาง/ยางก้อนถ้วยทั้งแบบกิโลและ DRC</p>
+          </div>
+          <button class="secondary-btn" id="clearPurchaseFormBtn">ล้างฟอร์ม</button>
+        </div>
+
+        <form id="purchaseForm" class="form-grid">
+          <div class="field">
+            <label>วันที่</label>
+            <input type="date" id="purchaseDate" required />
+          </div>
+          <div class="field">
+            <label>เวลา</label>
+            <input type="time" id="purchaseTime" required />
+          </div>
+          <div class="field span-2">
+            <label>ชื่อชาวสวน</label>
+            <div class="inline-field">
+              <input list="customerOptions" id="purchaseCustomer" placeholder="พิมพ์ชื่อ หรือเลือกจากรายการ" required />
+              <button type="button" class="mini-btn" id="saveCustomerFromPurchaseBtn">+ เพิ่ม</button>
+            </div>
+            <datalist id="customerOptions"></datalist>
+          </div>
+
+          <div class="field">
+            <label>ประเภทสินค้า</label>
+            <select id="purchaseProduct" required>
+              <option value="latex">น้ำยางสด</option>
+              <option value="cup">ขี้ยาง / ยางก้อนถ้วย</option>
+              <option value="scrap">เศษยาง</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>วิธีคำนวณ</label>
+            <select id="purchaseMethod" required>
+              <option value="drc">คิดแบบ DRC</option>
+              <option value="kg">คิดตามกิโลกรัม</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>น้ำหนักรวม (กก.)</label>
+            <input type="number" id="purchaseGross" min="0" step="0.01" placeholder="0.00" required />
+          </div>
+          <div class="field">
+            <label>หักถัง (กก.)</label>
+            <input type="number" id="purchaseTare" min="0" step="0.01" placeholder="0.00" value="0" />
+          </div>
+
+          <div class="field readonly">
+            <label>น้ำหนักสุทธิ (กก.)</label>
+            <input type="text" id="purchaseNet" readonly />
+          </div>
+          <div class="field purchase-drc-field">
+            <label>DRC (%)</label>
+            <input type="number" id="purchaseDrc" min="0" max="100" step="0.01" placeholder="เช่น 35" />
+          </div>
+          <div class="field purchase-drc-field">
+            <label>ราคา DRC 100 (บาท)</label>
+            <input type="number" id="purchasePriceDrc100" min="0" step="0.01" placeholder="ใส่เอง" />
+          </div>
+          <div class="field purchase-kg-field hidden">
+            <label>ราคาต่อกก. (บาท)</label>
+            <input type="number" id="purchasePriceKg" min="0" step="0.01" placeholder="ใส่เอง" />
+          </div>
+          <div class="field readonly purchase-drc-field">
+            <label>ราคาสด/กก. จาก DRC</label>
+            <input type="text" id="purchaseEffectiveKg" readonly />
+          </div>
+          <div class="field readonly purchase-drc-field">
+            <label>เนื้อยางแห้ง (กก.)</label>
+            <input type="text" id="purchaseDry" readonly />
+          </div>
+
+          <div class="field">
+            <label>ค่ารถ / ค่าขนส่ง หัก (บาท)</label>
+            <input type="number" id="purchaseTransportDeduct" min="0" step="0.01" placeholder="0.00" value="0" />
+          </div>
+          <div class="field">
+            <label>หักหนี้ / เบิกล่วงหน้า (บาท)</label>
+            <input type="number" id="purchaseDebtDeduct" min="0" step="0.01" placeholder="0.00" value="0" />
+          </div>
+          <div class="field">
+            <label>หักอื่น ๆ (บาท)</label>
+            <input type="number" id="purchaseOtherDeduct" min="0" step="0.01" placeholder="0.00" value="0" />
+          </div>
+          <div class="field">
+            <label>หมายเหตุรายการหัก</label>
+            <input type="text" id="purchaseDeductNote" placeholder="เช่น หักถุง / หักสิ่งสกปรก" />
+          </div>
+
+          <div class="field">
+            <label>วิธีจ่ายเงิน</label>
+            <select id="purchasePaymentMethod">
+              <option value="cash">เงินสด</option>
+              <option value="transfer">โอน</option>
+              <option value="credit">ค้างจ่าย</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>สถานะบิล</label>
+            <select id="purchaseStatus">
+              <option value="paid">จ่ายแล้ว</option>
+              <option value="pending">ค้างจ่าย</option>
+            </select>
+          </div>
+          <div class="field span-2">
+            <label>แนบรูปหลักฐาน</label>
+            <input type="file" id="purchaseImage" accept="image/*" />
+            <small class="hint">เช่น รูปตาชั่ง หรือสลิปโอน ระบบจะย่อรูปก่อนเก็บในเครื่อง</small>
+          </div>
+          <div class="field span-2">
+            <label>หมายเหตุบิล</label>
+            <textarea id="purchaseNote" rows="3" placeholder="รายละเอียดเพิ่มเติม"></textarea>
+          </div>
+
+          <aside class="summary-box span-2" aria-live="polite">
+            <div>
+              <span>ยอดก่อนหัก</span>
+              <strong id="purchaseGrossAmountPreview">฿0.00</strong>
+            </div>
+            <div>
+              <span>รายการหักรวม</span>
+              <strong id="purchaseDeductPreview">฿0.00</strong>
+            </div>
+            <div class="total-row">
+              <span>ยอดจ่ายสุทธิ</span>
+              <strong id="purchaseNetPayPreview">฿0.00</strong>
+            </div>
+          </aside>
+
+          <div class="actions span-2">
+            <button type="submit" class="primary-btn">บันทึกบิลซื้อ</button>
+            <button type="button" class="secondary-btn" id="savePrintPurchaseBtn">บันทึก + พิมพ์</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel tab-panel" id="sale">
+        <div class="panel-head">
+          <div>
+            <h2>สร้างบิลขายต่อโรงงาน</h2>
+            <p>บันทึกขายเข้าโรงงานและคำนวณกำไรโดยประมาณจากต้นทุนเฉลี่ย</p>
+          </div>
+          <button class="secondary-btn" id="clearSaleFormBtn">ล้างฟอร์ม</button>
+        </div>
+
+        <form id="saleForm" class="form-grid">
+          <div class="field">
+            <label>วันที่</label>
+            <input type="date" id="saleDate" required />
+          </div>
+          <div class="field">
+            <label>เวลา</label>
+            <input type="time" id="saleTime" required />
+          </div>
+          <div class="field span-2">
+            <label>ชื่อโรงงาน</label>
+            <div class="inline-field">
+              <input list="factoryOptions" id="saleFactory" placeholder="พิมพ์ชื่อ หรือเลือกจากรายการ" required />
+              <button type="button" class="mini-btn" id="saveFactoryFromSaleBtn">+ เพิ่ม</button>
+            </div>
+            <datalist id="factoryOptions"></datalist>
+          </div>
+
+          <div class="field">
+            <label>ประเภทสินค้า</label>
+            <select id="saleProduct" required>
+              <option value="latex">น้ำยางสด</option>
+              <option value="cup">ขี้ยาง / ยางก้อนถ้วย</option>
+              <option value="scrap">เศษยาง</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>วิธีคำนวณราคาขาย</label>
+            <select id="saleMethod" required>
+              <option value="drc">คิดแบบ DRC</option>
+              <option value="kg">คิดตามกิโลกรัม</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>น้ำหนักรวมขาย (กก.)</label>
+            <input type="number" id="saleGross" min="0" step="0.01" placeholder="0.00" required />
+          </div>
+          <div class="field">
+            <label>หักถัง / หักน้ำหนัก (กก.)</label>
+            <input type="number" id="saleTare" min="0" step="0.01" placeholder="0.00" value="0" />
+          </div>
+
+          <div class="field readonly">
+            <label>น้ำหนักสุทธิขาย (กก.)</label>
+            <input type="text" id="saleNet" readonly />
+          </div>
+          <div class="field sale-drc-field">
+            <label>DRC ขาย (%)</label>
+            <input type="number" id="saleDrc" min="0" max="100" step="0.01" placeholder="เช่น 36" />
+          </div>
+          <div class="field sale-drc-field">
+            <label>ราคา DRC 100 ขาย (บาท)</label>
+            <input type="number" id="salePriceDrc100" min="0" step="0.01" placeholder="ใส่เอง" />
+          </div>
+          <div class="field sale-kg-field hidden">
+            <label>ราคาขายต่อกก. (บาท)</label>
+            <input type="number" id="salePriceKg" min="0" step="0.01" placeholder="ใส่เอง" />
+          </div>
+          <div class="field readonly sale-drc-field">
+            <label>ราคาสด/กก. จาก DRC</label>
+            <input type="text" id="saleEffectiveKg" readonly />
+          </div>
+          <div class="field readonly sale-drc-field">
+            <label>เนื้อยางแห้งขาย (กก.)</label>
+            <input type="text" id="saleDry" readonly />
+          </div>
+
+          <div class="field">
+            <label>ค่าขนส่ง/ค่าใช้จ่ายขาย (บาท)</label>
+            <input type="number" id="saleExpense" min="0" step="0.01" placeholder="0.00" value="0" />
+          </div>
+          <div class="field">
+            <label>ต้นทุนเฉลี่ย/กก. สำหรับคำนวณกำไร</label>
+            <input type="number" id="saleCostKg" min="0" step="0.01" placeholder="ระบบแนะนำให้" />
+            <small class="hint" id="saleCostHint">คำนวณจากบิลซื้อที่ยังไม่ยกเลิก</small>
+          </div>
+          <div class="field">
+            <label>วิธีรับเงิน</label>
+            <select id="salePaymentMethod">
+              <option value="cash">เงินสด</option>
+              <option value="transfer">โอน</option>
+              <option value="credit">ค้างรับ</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>สถานะบิลขาย</label>
+            <select id="saleStatus">
+              <option value="received">รับเงินแล้ว</option>
+              <option value="pending">ค้างรับ</option>
+            </select>
+          </div>
+          <div class="field span-2">
+            <label>แนบรูปหลักฐาน</label>
+            <input type="file" id="saleImage" accept="image/*" />
+            <small class="hint">เช่น ใบชั่งโรงงาน หรือสลิปโอน</small>
+          </div>
+          <div class="field span-2">
+            <label>หมายเหตุบิลขาย</label>
+            <textarea id="saleNote" rows="3" placeholder="รายละเอียดเพิ่มเติม"></textarea>
+          </div>
+
+          <aside class="summary-box sale-summary span-2" aria-live="polite">
+            <div>
+              <span>ยอดขายก่อนหัก</span>
+              <strong id="saleGrossAmountPreview">฿0.00</strong>
+            </div>
+            <div>
+              <span>ต้นทุน + ค่าใช้จ่าย</span>
+              <strong id="saleCostPreview">฿0.00</strong>
+            </div>
+            <div class="total-row">
+              <span>กำไรโดยประมาณ</span>
+              <strong id="saleProfitPreview">฿0.00</strong>
+            </div>
+          </aside>
+
+          <div class="actions span-2">
+            <button type="submit" class="primary-btn">บันทึกบิลขาย</button>
+            <button type="button" class="secondary-btn" id="savePrintSaleBtn">บันทึก + พิมพ์</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel tab-panel" id="purchase-bills">
+        <div class="panel-head">
+          <div>
+            <h2>บิลซื้อทั้งหมด</h2>
+            <p>ค้นหา ดูรายละเอียด พิมพ์ซ้ำ คัดลอก หรือยกเลิกบิลซื้อ</p>
+          </div>
+          <div class="toolbar">
+            <input type="date" id="purchaseFilterDate" />
+            <input type="search" id="purchaseSearch" placeholder="ค้นหาชื่อ / เลขบิล" />
+          </div>
+        </div>
+        <div id="purchaseList" class="table-wrap"></div>
+      </section>
+
+      <section class="panel tab-panel" id="sale-bills">
+        <div class="panel-head">
+          <div>
+            <h2>บิลขายทั้งหมด</h2>
+            <p>ค้นหา ดูรายละเอียด พิมพ์ซ้ำ คัดลอก หรือยกเลิกบิลขาย</p>
+          </div>
+          <div class="toolbar">
+            <input type="date" id="saleFilterDate" />
+            <input type="search" id="saleSearch" placeholder="ค้นหาโรงงาน / เลขบิล" />
+          </div>
+        </div>
+        <div id="saleList" class="table-wrap"></div>
+      </section>
+
+      <section class="panel tab-panel" id="stock">
+        <div class="panel-head">
+          <div>
+            <h2>สต๊อก</h2>
+            <p>ซื้อเข้า - ขายออก + ปรับสต๊อก คำนวณแยกตามประเภทสินค้า</p>
+          </div>
+        </div>
+        <div class="cards" id="stockCards"></div>
+        <form id="stockAdjustForm" class="compact-form stock-form">
+          <select id="stockProduct">
+            <option value="latex">น้ำยางสด</option>
+            <option value="cup">ขี้ยาง / ยางก้อนถ้วย</option>
+            <option value="scrap">เศษยาง</option>
+          </select>
+          <select id="stockAdjustType">
+            <option value="add">ปรับเพิ่ม</option>
+            <option value="remove">ปรับลด</option>
+          </select>
+          <input type="number" id="stockAdjustKg" min="0" step="0.01" placeholder="จำนวนกก." required />
+          <input type="text" id="stockAdjustNote" placeholder="หมายเหตุ เช่น สูญเสียน้ำหนัก" />
+          <button class="primary-btn" type="submit">บันทึกปรับสต๊อก</button>
+        </form>
+        <div class="grid two mt">
+          <div class="card large">
+            <h3>สต๊อกตามประเภท</h3>
+            <div id="stockTable" class="table-wrap"></div>
+          </div>
+          <div class="card large">
+            <h3>ประวัติปรับสต๊อก</h3>
+            <div id="stockAdjustList" class="table-wrap"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel tab-panel" id="customers">
+        <div class="panel-head">
+          <div>
+            <h2>รายชื่อชาวสวน</h2>
+            <p>บันทึกชื่อ เบอร์โทร โซน และดูยอดขายรวมรายคน</p>
+          </div>
+        </div>
+        <form id="customerForm" class="compact-form">
+          <input type="text" id="newCustomerName" placeholder="ชื่อชาวสวน" required />
+          <input type="tel" id="newCustomerPhone" placeholder="เบอร์โทร" />
+          <input type="text" id="newCustomerZone" placeholder="โซน/หมู่บ้าน" />
+          <button class="primary-btn" type="submit">เพิ่มชาวสวน</button>
+        </form>
+        <div id="customerList" class="table-wrap"></div>
+      </section>
+
+      <section class="panel tab-panel" id="factories">
+        <div class="panel-head">
+          <div>
+            <h2>รายชื่อโรงงาน</h2>
+            <p>ใช้สำหรับออกบิลขายต่อและดูยอดขายรายโรงงาน</p>
+          </div>
+        </div>
+        <form id="factoryForm" class="compact-form">
+          <input type="text" id="newFactoryName" placeholder="ชื่อโรงงาน" required />
+          <input type="tel" id="newFactoryPhone" placeholder="เบอร์โทร" />
+          <input type="text" id="newFactoryAddress" placeholder="ที่อยู่/โซน" />
+          <button class="primary-btn" type="submit">เพิ่มโรงงาน</button>
+        </form>
+        <div id="factoryList" class="table-wrap"></div>
+      </section>
+
+      <section class="panel tab-panel" id="prices">
+        <div class="panel-head">
+          <div>
+            <h2>ราคาประจำวัน</h2>
+            <p>ใช้เป็นค่าเริ่มต้นในฟอร์มซื้อ/ขาย แต่ยังแก้ราคาเองในแต่ละบิลได้</p>
+          </div>
+        </div>
+        <form id="priceForm" class="form-grid small">
+          <div class="field">
+            <label>วันที่ราคา</label>
+            <input type="date" id="priceDate" required />
+          </div>
+          <div class="field">
+            <label>น้ำยาง ซื้อ ราคา DRC 100</label>
+            <input type="number" id="defaultLatexBuyDrc" step="0.01" min="0" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label>ขี้ยาง ซื้อ ราคาต่อกก.</label>
+            <input type="number" id="defaultCupBuyKg" step="0.01" min="0" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label>ขี้ยาง ซื้อ ราคา DRC 100</label>
+            <input type="number" id="defaultCupBuyDrc" step="0.01" min="0" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label>น้ำยาง ขาย ราคา DRC 100</label>
+            <input type="number" id="defaultLatexSaleDrc" step="0.01" min="0" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label>ขี้ยาง ขาย ราคาต่อกก.</label>
+            <input type="number" id="defaultCupSaleKg" step="0.01" min="0" placeholder="0.00" />
+          </div>
+          <div class="field">
+            <label>ขี้ยาง ขาย ราคา DRC 100</label>
+            <input type="number" id="defaultCupSaleDrc" step="0.01" min="0" placeholder="0.00" />
+          </div>
+          <div class="actions span-2">
+            <button type="submit" class="primary-btn">บันทึกราคา</button>
+          </div>
+        </form>
+        <div id="priceHistory" class="table-wrap"></div>
+      </section>
+
+      <section class="panel tab-panel" id="reports">
+        <div class="panel-head">
+          <div>
+            <h2>รายงาน</h2>
+            <p>สรุปซื้อ ขาย กำไร สต๊อก ค้างจ่าย/ค้างรับ และ Export CSV</p>
+          </div>
+          <div class="toolbar">
+            <input type="date" id="reportFrom" />
+            <input type="date" id="reportTo" />
+            <button class="secondary-btn" id="exportPurchaseCsvBtn">Export บิลซื้อ CSV</button>
+            <button class="secondary-btn" id="exportSaleCsvBtn">Export บิลขาย CSV</button>
+          </div>
+        </div>
+        <div class="cards" id="reportCards"></div>
+        <div class="grid two mt">
+          <div class="card large">
+            <h3>รายงานซื้อ</h3>
+            <div id="purchaseReportTable" class="table-wrap"></div>
+          </div>
+          <div class="card large">
+            <h3>รายงานขาย / กำไร</h3>
+            <div id="saleReportTable" class="table-wrap"></div>
+          </div>
+        </div>
+        <div class="grid two mt">
+          <div class="card large">
+            <h3>ยอดซื้อรายชาวสวน</h3>
+            <div id="customerReportTable" class="table-wrap"></div>
+          </div>
+          <div class="card large">
+            <h3>ยอดขายรายโรงงาน</h3>
+            <div id="factoryReportTable" class="table-wrap"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel tab-panel" id="settings">
+        <div class="panel-head">
+          <div>
+            <h2>ตั้งค่า</h2>
+            <p>ตั้งค่าชื่อร้าน รูปแบบบิล สำรองข้อมูล และ Cloud Sync</p>
+          </div>
+        </div>
+        <form id="settingsForm" class="form-grid small">
+          <div class="field span-2">
+            <label>ชื่อร้าน / โปรแกรม</label>
+            <input type="text" id="shopName" placeholder="สิทธิ์-ปิ่น น้ำยางสด" />
+          </div>
+          <div class="field span-2">
+            <label>ที่อยู่</label>
+            <input type="text" id="shopAddress" placeholder="ที่อยู่บนหัวบิล" />
+          </div>
+          <div class="field">
+            <label>เบอร์โทร</label>
+            <input type="tel" id="shopPhone" placeholder="เบอร์โทร" />
+          </div>
+          <div class="field">
+            <label>ชื่อผู้ทำรายการเริ่มต้น</label>
+            <input type="text" id="defaultStaff" placeholder="เช่น ปิ่น" />
+          </div>
+          <div class="field">
+            <label>ขนาดบิลพิมพ์</label>
+            <select id="receiptSize">
+              <option value="80">Thermal 80mm</option>
+              <option value="58">Thermal 58mm</option>
+              <option value="a4">A4</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>การปัดเศษยอดจ่าย/ยอดรับ</label>
+            <select id="roundingMode">
+              <option value="none">ไม่ปัดเศษ</option>
+              <option value="baht">ปัดเป็นบาท</option>
+              <option value="five">ปัดลงหลัก 5 บาท</option>
+            </select>
+          </div>
+          <div class="actions span-2">
+            <button type="submit" class="primary-btn">บันทึกตั้งค่า</button>
+          </div>
+        </form>
+
+        <div class="backup-box cloud-box">
+          <h3>Cloud Sync Firebase / Firestore</h3>
+          <p>Version 3 ใช้ได้ 2 โหมด: <strong>Local</strong> เก็บข้อมูลในเครื่องเหมือนเดิม หรือ <strong>Cloud Sync</strong> เพื่อซิงก์ข้อมูลหลายเครื่องผ่าน Firebase ของคุณเอง โดยไม่มีหน้าล็อกอินให้ผู้ใช้เห็น</p>
+          <div class="form-grid small">
+            <div class="field span-2">
+              <label>Firebase Config JSON</label>
+              <textarea id="firebaseConfigText" rows="7" placeholder='วาง config จาก Firebase เช่น { "apiKey": "...", "authDomain": "...", "projectId": "..." }'></textarea>
+              <small class="hint">ต้องเปิด Cloud Firestore และ Anonymous Authentication ใน Firebase ก่อนใช้งาน Cloud Sync</small>
+            </div>
+            <div class="field">
+              <label>รหัสร้าน / Shop Code</label>
+              <input type="text" id="firebaseShopCode" placeholder="jaojoy-main" />
+              <small class="hint">ใช้รหัสเดียวกันทุกเครื่องเพื่อแชร์ข้อมูลชุดเดียวกัน</small>
+            </div>
+            <div class="field">
+              <label>สถานะซิงก์</label>
+              <div class="status-pill local" id="cloudStatus">Local only</div>
+              <small class="hint" id="cloudLastSync">ยังไม่ได้เชื่อม Cloud</small>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="primary-btn" id="connectFirebaseBtn" type="button">บันทึก + เชื่อม Firebase</button>
+            <button class="secondary-btn" id="pushCloudBtn" type="button">ส่งข้อมูลในเครื่องขึ้น Cloud</button>
+            <button class="secondary-btn" id="pullCloudBtn" type="button">ดึงข้อมูลจาก Cloud</button>
+            <button class="danger-btn" id="disconnectFirebaseBtn" type="button">ปิด Cloud Sync</button>
+          </div>
+          <details class="rules-box">
+            <summary>ตัวอย่าง Firestore Rules สำหรับทดลอง</summary>
+            <pre>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /rubberJaoJoy/{shopId}/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}</pre>
+          </details>
+        </div>
+
+        <div class="backup-box">
+          <h3>สำรองข้อมูล</h3>
+          <p>Version 3 ยังใช้งานแบบ No Login ได้ และเพิ่ม Cloud Sync ผ่าน Firebase แล้ว แต่ควร Export JSON เก็บสำรองเป็นระยะ</p>
+          <div class="actions">
+            <button class="secondary-btn" id="exportJsonBtn">Export JSON</button>
+            <label class="file-btn">Import JSON<input type="file" id="importJsonInput" accept="application/json" hidden /></label>
+            <button class="danger-btn" id="resetDataBtn">ล้างข้อมูลทั้งหมด</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="printArea" class="print-area"></div>
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <button class="modal-close" id="modalCloseBtn">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

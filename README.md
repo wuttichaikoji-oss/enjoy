@@ -1,0 +1,82 @@
+# สิทธิ์-ปิ่น น้ำยางสด Version 3
+
+เว็บแอพคำนวณบิลรับซื้อยาง / ขี้ยาง / ยางก้อนถ้วย พร้อมขายต่อโรงงาน สต๊อก รายงานกำไร และ Cloud Sync ผ่าน Firebase/Firestore
+
+อัปเดตนี้ใส่โลโก้ **สิทธิ์-ปิ่น น้ำยางสด** ในหน้าเว็บ, PWA icon, favicon และหัวบิลพิมพ์แล้ว
+- ใบพิมพ์บิล thermal ใช้โลโก้ขาวดำ `assets/logo-thermal.png` โดยอัตโนมัติ ส่วนหน้าเว็บยังใช้โลโก้สี `assets/logo.png`
+
+
+## สิ่งที่มีใน V3
+
+- ไม่มีหน้า Login
+- รับซื้อน้ำยางสดแบบ DRC
+- รับซื้อขี้ยาง / ยางก้อนถ้วย 2 แบบ: คิดตามกิโลกรัม และคิดแบบ DRC
+- หักถัง / หักค่ารถ / หักหนี้ / หักอื่น ๆ
+- บันทึกบิลซื้อ
+- ขายต่อโรงงาน
+- เพิ่มรายชื่อชาวสวนและโรงงาน
+- ระบบสต๊อก ซื้อเข้า / ขายออก / ปรับสต๊อก
+- รายงานซื้อ / ขาย / กำไร / ค้างจ่าย / ค้างรับ
+- พิมพ์บิล 58mm / 80mm / A4
+- แนบรูปหลักฐาน เช่น รูปตาชั่งหรือสลิป
+- Export CSV สำหรับเปิดใน Excel
+- Export / Import JSON สำหรับสำรองข้อมูล
+- PWA เบื้องต้น เปิดใช้งานแบบแอพได้
+- Cloud Sync Firebase/Firestore สำหรับหลายเครื่อง
+
+## วิธีเปิดใช้แบบ Local
+
+1. แตก ZIP
+2. เปิดไฟล์ `index.html`
+3. ใช้งานได้ทันที ข้อมูลจะอยู่ในเครื่อง/เบราว์เซอร์นั้น
+
+## วิธีอัปขึ้น GitHub Pages
+
+1. แตก ZIP
+2. อัปโหลดไฟล์ทั้งหมดขึ้น repository
+3. เปิด Settings > Pages
+4. เลือก branch และ folder ที่เก็บไฟล์
+5. เปิดลิงก์ GitHub Pages ที่ได้
+
+## วิธีเปิด Cloud Sync Firebase
+
+1. ไปที่ Firebase Console
+2. สร้าง Project
+3. สร้าง Web App แล้วคัดลอก Firebase config
+4. เปิด Cloud Firestore
+5. เปิด Authentication > Sign-in method > Anonymous
+6. ใส่ Firestore Rules จากไฟล์ `firestore.rules`
+7. เปิดเว็บแอพ > ตั้งค่า > Cloud Sync Firebase
+8. วาง Firebase config
+9. ใส่ Shop Code เช่น `jaojoy-main`
+10. กด `บันทึก + เชื่อม Firebase`
+
+> ใช้ Shop Code เดียวกันทุกเครื่อง เพื่อให้ข้อมูลซิงก์ชุดเดียวกัน
+
+## Firestore data path
+
+ข้อมูลจะถูกเก็บที่:
+
+```text
+rubberJaoJoy/{shopCode}/customers
+rubberJaoJoy/{shopCode}/factories
+rubberJaoJoy/{shopCode}/prices
+rubberJaoJoy/{shopCode}/purchases
+rubberJaoJoy/{shopCode}/sales
+rubberJaoJoy/{shopCode}/stockAdjustments
+rubberJaoJoy/{shopCode}/meta/settings
+```
+
+## หมายเหตุเรื่องความปลอดภัย
+
+เวอร์ชันนี้ออกแบบตามคำขอให้ไม่มีหน้า Login แต่ใช้ Anonymous Authentication หลังบ้านเพื่อให้ Firestore Rules ตรวจได้ว่าเป็นผู้ใช้ที่ authenticated แล้ว
+
+Rules ที่ให้มาเหมาะกับการเริ่มทดสอบและใช้งานภายในร้าน หากต้องการความปลอดภัยระดับ production ควรเพิ่มระบบสิทธิ์ผู้ใช้ / Admin / Staff ในเวอร์ชันถัดไป
+
+## ข้อควรระวัง
+
+- ถ้าแนบรูปจำนวนมาก ฐานข้อมูลจะโตเร็ว ควร Export JSON สำรองเป็นระยะ
+- ถ้าใช้ Cloud Sync ต้องเปิดอินเทอร์เน็ต
+- ถ้า Firebase ยังไม่ได้ตั้งค่า ระบบยังใช้ Local ได้ตามปกติ
+
+- ปรับโลโก้ในแอพให้เป็นเวอร์ชันขาวดำตามแบบล่าสุด ทั้งหน้าเว็บ, ไอคอนแอพ และใบบิล thermal
